@@ -1,9 +1,10 @@
 import ContractDatabaseRepository from "../src/infra/repository/ContractDatabaseRepository";
 import ContractRepository from "../src/application/repository/ContractRepository";
-import CsvPresenter from "../src/infra/presenter/CsvPresenter";
 import DatabaseConnection from "../src/infra/database/DatabaseConnection";
 import GenerateInvoices from "../src/application/usecase/GenerateInvoices";
 import PgPromiseAdapter from "../src/infra/database/PgPromiseAdapter";
+import DynamicPresenterFactory from "../src/infra/presenter/DynamicPresenterFactory";
+import Mediator from "../src/infra/mediator/Mediator";
 // integration
 let generateInvoices: GenerateInvoices;
 let connection: DatabaseConnection;
@@ -33,7 +34,7 @@ beforeEach(() => {
 	// }
 	connection = new PgPromiseAdapter();
 	contractRepository = new ContractDatabaseRepository(connection);
-	generateInvoices = new GenerateInvoices(contractRepository);
+	generateInvoices = new GenerateInvoices(contractRepository, new DynamicPresenterFactory(), new Mediator());
 });
 
 test("Deve gerar as notas fiscais por regime de caixa", async function () {
@@ -65,8 +66,7 @@ test("Deve gerar as notas fiscais por regime de competência por csv", async fun
 		type: "accrual",
 		format: "csv"
 	};
-	const presenter = new CsvPresenter();
-	const generateInvoices = new GenerateInvoices(contractRepository, presenter);
+	const generateInvoices = new GenerateInvoices(contractRepository, new DynamicPresenterFactory(), new Mediator());
 	const output = await generateInvoices.execute(input);
 	expect(output).toBe("2022-01-01;500");
 });
