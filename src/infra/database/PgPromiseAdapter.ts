@@ -12,6 +12,10 @@ export default class PgPromiseAdapter implements DatabaseConnection {
 		return this.connection.query(statement, params);
 	}
 
+	transaction(work: (connection: Pick<DatabaseConnection, "query">) => Promise<any>): Promise<any> {
+		return this.connection.tx((t: any) => work(t));
+	}
+
 	close(): Promise<void> {
 		return this.connection.$pool.end();
 	}
